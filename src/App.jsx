@@ -3,7 +3,27 @@ import RailMap from './map/RailMap'
 import Sidebar from './sidebar/Sidebar'
 import Filters from './sidebar/Filters'
 
-const layout = {
+const COMMIT_HASH = 'a3293b85309a748f64b0d0b508a8e9dc65e2cd80'
+const CDN_BASE   = `https://cdn.jsdelivr.net/gh/rodeocrazy/italian-rail-map@${COMMIT_HASH}/public/data`
+const LOCAL_BASE = '/data'
+
+async function fetchData(name) {
+  const base = import.meta.env.DEV ? LOCAL_BASE : CDN_BASE
+  const res = await fetch(`${base}/${name}.json`)
+  return res.json()
+}
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth < 768)
+    window.addEventListener('resize', handler)
+    return () => window.removeEventListener('resize', handler)
+  }, [])
+  return isMobile
+}
+
+const desktop = {
   root: {
     display: 'flex',
     width: '100vw',
@@ -66,7 +86,6 @@ const layout = {
   divider: {
     height: '1px',
     background: '#1e2d3d',
-    margin: '0',
   },
   mapContainer: {
     flex: 1,
@@ -88,27 +107,17 @@ const layout = {
   },
 }
 
-const COMMIT_HASH = '47510feb2395e7f70348d79c690f2cf515c04b68'
-const CDN_BASE  = `https://cdn.jsdelivr.net/gh/rodeocrazy/italian-rail-map@${COMMIT_HASH}/public/data`
-const LOCAL_BASE = '/data'
-
-async function fetchData(name) {
-  const base = import.meta.env.DEV ? LOCAL_BASE : CDN_BASE
-  const res = await fetch(`${base}/${name}.json`)
-  return res.json()
-}
-
 export default function App() {
-  const [stations, setStations]   = useState([])
-  const [edges, setEdges]         = useState([])
-  const [loading, setLoading]     = useState(true)
-  const [selected, setSelected]   = useState(null)
+  const isMobile = useIsMobile()
+
+  const [stations, setStations]         = useState([])
+  const [edges, setEdges]               = useState([])
+  const [loading, setLoading]           = useState(true)
+  const [selected, setSelected]         = useState(null)
   const [highlightLine, setHighlightLine] = useState(null)
-  const [search, setSearch]       = useState('')
-  const [filters, setFilters]     = useState({
-    types:        ['station'],
-    hideInactive: false,
-  })
+  const [search, setSearch]             = useState('')
+  const [filters, setFilters]           = useState({ types: ['station'], hideInactive: false })
+  const [showFilters, setShowFilters]   = useState(false)  // mobile filter modal
 
   useEffect(() => {
     Promise.all([
@@ -121,7 +130,6 @@ export default function App() {
     })
   }, [])
 
-  // All edges for the selected station's lines
   const visibleEdges = useMemo(() => {
     if (!selected) return []
     const lineIds = new Set(
@@ -132,7 +140,6 @@ export default function App() {
     return edges.filter(e => lineIds.has(e.line_id))
   }, [selected, edges])
 
-  // Filtered stations — always include stations on the selected line
   const visibleStations = useMemo(() => {
     const edgeStationIds = new Set([
       ...visibleEdges.map(e => e.station_a_id),
@@ -155,7 +162,6 @@ export default function App() {
     })
   }, [stations, filters, search, visibleEdges])
 
-  // Lines connected to selected station (for sidebar)
   const connectedLines = useMemo(() => {
     if (!selected) return []
     const seen = new Set()
@@ -172,18 +178,16 @@ export default function App() {
       }))
   }, [selected, visibleEdges])
 
-  // Stats
   const stats = useMemo(() => {
     const connectedIds = new Set([
       ...edges.map(e => e.station_a_id),
       ...edges.map(e => e.station_b_id),
     ])
-    const lineIds = new Set(edges.map(e => e.line_id))
     return {
       total:     stations.length,
       connected: connectedIds.size,
       edges:     edges.length,
-      lines:     lineIds.size,
+      lines:     new Set(edges.map(e => e.line_id)).size,
     }
   }, [stations, edges])
 
@@ -192,17 +196,172 @@ export default function App() {
     setHighlightLine(null)
   }
 
-  return (
-    <div style={layout.root}>
-      <div style={layout.panel}>
-        <div style={layout.header}>
-          <div style={layout.title}>Rete Ferroviaria</div>
-          <div style={layout.subtitle}>Italy Rail Network</div>
+  const map = (
+    <div style={desktop.mapContainer}>
+      {loading && (
+        <div style={desktop.loadingOverlay}>loading network data...</div>
+      )}
+      {!loading && (
+        <RailMap
+          stations={visibleStations}
+          edges={visibleEdges}
+          selectedStation={selected}
+          highlightLineId={highlightLine}
+          onSelectStation={handleSelectStation}
+        />
+      )}
+    </div>
+  )
+
+  // ── Mobile layout ──────────────────────────────────────────────────────────
+  if (isMobile) {
+    return (
+      <div style={{ width: '100vw', height: '100vh', background: '#080c10', position: 'relative', overflow: 'hidden' }}>
+
+        {/* Full screen map */}
+        {map}
+
+        {/* Top bar */}
+        <div style={{
+          position: 'absolute', top: 0, left: 0, right: 0,
+          display: 'flex', alignItems: 'center', gap: '8px',
+          padding: '10px 12px',
+          background: 'rgba(13,17,23,0.92)',
+          borderBottom: '1px solid #1e2d3d',
+          backdropFilter: 'blur(8px)',
+          zIndex: 20,
+        }}>
+          <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '18px', color: '#00d4ff', letterSpacing: '0.1em', flexShrink: 0 }}>
+            Rete Ferroviaria
+          </div>
+          <input
+            style={{
+              flex: 1,
+              background: '#141b24',
+              border: '1px solid #1e2d3d',
+              borderRadius: '2px',
+              padding: '6px 10px',
+              color: '#c8d8e8',
+              fontFamily: "'DM Mono', monospace",
+              fontSize: '12px',
+              outline: 'none',
+            }}
+            placeholder="Search stations..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+          <button
+            onClick={() => setShowFilters(true)}
+            style={{
+              background: '#141b24',
+              border: '1px solid #1e2d3d',
+              borderRadius: '2px',
+              color: '#6b8299',
+              fontFamily: "'DM Mono', monospace",
+              fontSize: '11px',
+              padding: '6px 10px',
+              cursor: 'pointer',
+              flexShrink: 0,
+            }}
+          >
+            Filter
+          </button>
         </div>
 
-        <div style={layout.search}>
+        {/* Bottom sheet — slides up when station selected */}
+        <div style={{
+          position: 'absolute', bottom: 0, left: 0, right: 0,
+          background: '#0d1117',
+          borderTop: '1px solid #1e2d3d',
+          borderRadius: '12px 12px 0 0',
+          zIndex: 20,
+          maxHeight: selected ? '55vh' : '0',
+          overflow: 'hidden',
+          transition: 'max-height 0.3s ease',
+        }}>
+          {/* Drag handle */}
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 4px' }}>
+            <div style={{ width: '36px', height: '4px', borderRadius: '2px', background: '#1e2d3d' }} />
+          </div>
+          <div style={{ overflowY: 'auto', maxHeight: 'calc(55vh - 24px)' }}>
+            <Sidebar
+              station={selected}
+              connectedLines={connectedLines}
+              onHighlightLine={setHighlightLine}
+            />
+          </div>
+        </div>
+
+        {/* Filter modal */}
+        {showFilters && (
+          <div
+            style={{
+              position: 'absolute', inset: 0, zIndex: 30,
+              background: 'rgba(8,12,16,0.85)',
+              backdropFilter: 'blur(4px)',
+              display: 'flex', alignItems: 'flex-end',
+            }}
+            onClick={() => setShowFilters(false)}
+          >
+            <div
+              style={{
+                width: '100%',
+                background: '#0d1117',
+                borderTop: '1px solid #1e2d3d',
+                borderRadius: '12px 12px 0 0',
+                padding: '16px 0',
+              }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div style={{
+                fontFamily: "'DM Mono', monospace",
+                fontSize: '10px',
+                color: '#3d5266',
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                padding: '0 16px 12px',
+                borderBottom: '1px solid #1e2d3d',
+                marginBottom: '4px',
+              }}>
+                Filters
+              </div>
+              <Filters filters={filters} onChange={setFilters} stats={stats} />
+              <div style={{ padding: '12px 16px 0' }}>
+                <button
+                  onClick={() => setShowFilters(false)}
+                  style={{
+                    width: '100%',
+                    background: 'rgba(0,212,255,0.1)',
+                    border: '1px solid #00d4ff40',
+                    borderRadius: '2px',
+                    color: '#00d4ff',
+                    fontFamily: "'DM Mono', monospace",
+                    fontSize: '12px',
+                    padding: '10px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // ── Desktop layout ─────────────────────────────────────────────────────────
+  return (
+    <div style={desktop.root}>
+      <div style={desktop.panel}>
+        <div style={desktop.header}>
+          <div style={desktop.title}>Rete Ferroviaria</div>
+          <div style={desktop.subtitle}>Italy Rail Network</div>
+        </div>
+        <div style={desktop.search}>
           <input
-            style={layout.searchInput}
+            style={desktop.searchInput}
             placeholder="Search stations..."
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -210,36 +369,17 @@ export default function App() {
             onBlur={e => e.target.style.borderColor = '#1e2d3d'}
           />
         </div>
-
-        <div style={layout.filtersScroll}>
+        <div style={desktop.filtersScroll}>
           <Filters filters={filters} onChange={setFilters} stats={stats} />
         </div>
-
-        <div style={layout.divider} />
-
+        <div style={desktop.divider} />
         <Sidebar
           station={selected}
           connectedLines={connectedLines}
           onHighlightLine={setHighlightLine}
         />
       </div>
-
-      <div style={layout.mapContainer}>
-        {loading && (
-          <div style={layout.loadingOverlay}>
-            loading network data...
-          </div>
-        )}
-        {!loading && (
-          <RailMap
-            stations={visibleStations}
-            edges={visibleEdges}
-            selectedStation={selected}
-            highlightLineId={highlightLine}
-            onSelectStation={handleSelectStation}
-          />
-        )}
-      </div>
+      {map}
     </div>
   )
 }
