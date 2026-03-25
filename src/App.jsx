@@ -3,7 +3,7 @@ import RailMap from './map/RailMap'
 import Sidebar from './sidebar/Sidebar'
 import Filters from './sidebar/Filters'
 
-const COMMIT_HASH = '671b99fb96d3dc46bf9a1e7ee82302822d8338b0'
+const COMMIT_HASH = '81003ea510b0f8285bde80640ab7c05f1386fc98'
 const CDN_BASE   = `https://cdn.jsdelivr.net/gh/rodeocrazy/italian-rail-map@${COMMIT_HASH}/public/data`
 const LOCAL_BASE = '/data'
 
@@ -196,6 +196,11 @@ export default function App() {
     setHighlightLine(null)
   }
 
+  const handleDeselect = () => {
+    setSelected(null)
+    setHighlightLine(null)
+  }
+
   // ── Mobile layout ──────────────────────────────────────────────────────────
   if (isMobile) {
     return (
@@ -207,7 +212,7 @@ export default function App() {
         overflow: 'hidden',
       }}>
 
-        {/* Full screen map — absolutely fills the container */}
+        {/* Full screen map */}
         <div style={{ position: 'absolute', inset: 0 }}>
           {loading && (
             <div style={desktop.loadingOverlay}>loading network data...</div>
@@ -219,6 +224,7 @@ export default function App() {
               selectedStation={selected}
               highlightLineId={highlightLine}
               onSelectStation={handleSelectStation}
+              onDeselectStation={handleDeselect}
             />
           )}
         </div>
@@ -397,6 +403,7 @@ export default function App() {
             selectedStation={selected}
             highlightLineId={highlightLine}
             onSelectStation={handleSelectStation}
+            onDeselectStation={handleDeselect}
           />
         )}
       </div>

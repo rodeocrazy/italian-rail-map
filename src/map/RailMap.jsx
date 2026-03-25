@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import Map from 'react-map-gl'
 import DeckGL from '@deck.gl/react'
 import { buildStationLayer, buildEdgeLayer } from './layers'
@@ -36,10 +36,12 @@ export default function RailMap({
   selectedStation,
   highlightLineId,
   onSelectStation,
+  onDeselectStation,
 }) {
   const [hoverInfo, setHoverInfo] = useState(null)
   const [viewState, setViewState] = useState(INITIAL_VIEW)
   const [mounted, setMounted]     = useState(false)
+  const dragRef                   = useRef({ startX: 0, startY: 0, dragging: false })
 
   useEffect(() => {
     setMounted(true)
@@ -51,7 +53,6 @@ export default function RailMap({
 
   const hasSelection = !!selectedStation
 
-  // Build set of station IDs that are on the selected line
   const lineStationIds = useMemo(() => {
     if (!hasSelection) return new Set()
     return new Set([
@@ -72,10 +73,31 @@ export default function RailMap({
     }),
   ]
 
+  const handlePointerDown = useCallback((e) => {
+    dragRef.current = { startX: e.clientX, startY: e.clientY, dragging: false }
+  }, [])
+
+  const handlePointerUp = useCallback((e) => {
+    const dx = Math.abs(e.clientX - dragRef.current.startX)
+    const dy = Math.abs(e.clientY - dragRef.current.startY)
+    // If pointer moved less than 5px it's a tap/click not a drag
+    if (dx < 5 && dy < 5 && selectedStation) {
+      // Only deselect if the click wasn't on a station (station clicks are
+      // handled by the deck.gl layer onClick which fires before this)
+      setTimeout(() => {
+        onDeselectStation?.()
+      }, 0)
+    }
+  }, [selectedStation, onDeselectStation])
+
   if (!mounted) return null
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+    <div
+      style={{ position: 'relative', width: '100%', height: '100%' }}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+    >
       <DeckGL
         viewState={viewState}
         onViewStateChange={({ viewState }) => setViewState(viewState)}
