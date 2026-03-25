@@ -3,7 +3,7 @@ import RailMap from './map/RailMap'
 import Sidebar from './sidebar/Sidebar'
 import Filters from './sidebar/Filters'
 
-const COMMIT_HASH = 'c4d065da83f958600e1806605133be7f067344f0'
+const COMMIT_HASH = '671b99fb96d3dc46bf9a1e7ee82302822d8338b0'
 const CDN_BASE   = `https://cdn.jsdelivr.net/gh/rodeocrazy/italian-rail-map@${COMMIT_HASH}/public/data`
 const LOCAL_BASE = '/data'
 
@@ -110,14 +110,14 @@ const desktop = {
 export default function App() {
   const isMobile = useIsMobile()
 
-  const [stations, setStations]         = useState([])
-  const [edges, setEdges]               = useState([])
-  const [loading, setLoading]           = useState(true)
-  const [selected, setSelected]         = useState(null)
+  const [stations, setStations]           = useState([])
+  const [edges, setEdges]                 = useState([])
+  const [loading, setLoading]             = useState(true)
+  const [selected, setSelected]           = useState(null)
   const [highlightLine, setHighlightLine] = useState(null)
-  const [search, setSearch]             = useState('')
-  const [filters, setFilters]           = useState({ types: ['station'], hideInactive: false })
-  const [showFilters, setShowFilters]   = useState(false)  // mobile filter modal
+  const [search, setSearch]               = useState('')
+  const [filters, setFilters]             = useState({ types: ['station'], hideInactive: false })
+  const [showFilters, setShowFilters]     = useState(false)
 
   useEffect(() => {
     Promise.all([
@@ -196,30 +196,32 @@ export default function App() {
     setHighlightLine(null)
   }
 
-  const map = (
-    <div style={desktop.mapContainer}>
-      {loading && (
-        <div style={desktop.loadingOverlay}>loading network data...</div>
-      )}
-      {!loading && (
-        <RailMap
-          stations={visibleStations}
-          edges={visibleEdges}
-          selectedStation={selected}
-          highlightLineId={highlightLine}
-          onSelectStation={handleSelectStation}
-        />
-      )}
-    </div>
-  )
-
   // ── Mobile layout ──────────────────────────────────────────────────────────
   if (isMobile) {
     return (
-      <div style={{ width: '100vw', height: '100vh', background: '#080c10', position: 'relative', overflow: 'hidden' }}>
+      <div style={{
+        width: '100vw',
+        height: '100vh',
+        background: '#080c10',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
 
-        {/* Full screen map */}
-        {map}
+        {/* Full screen map — absolutely fills the container */}
+        <div style={{ position: 'absolute', inset: 0 }}>
+          {loading && (
+            <div style={desktop.loadingOverlay}>loading network data...</div>
+          )}
+          {!loading && (
+            <RailMap
+              stations={visibleStations}
+              edges={visibleEdges}
+              selectedStation={selected}
+              highlightLineId={highlightLine}
+              onSelectStation={handleSelectStation}
+            />
+          )}
+        </div>
 
         {/* Top bar */}
         <div style={{
@@ -231,7 +233,13 @@ export default function App() {
           backdropFilter: 'blur(8px)',
           zIndex: 20,
         }}>
-          <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '18px', color: '#00d4ff', letterSpacing: '0.1em', flexShrink: 0 }}>
+          <div style={{
+            fontFamily: "'Bebas Neue', sans-serif",
+            fontSize: '18px',
+            color: '#00d4ff',
+            letterSpacing: '0.1em',
+            flexShrink: 0,
+          }}>
             Rete Ferroviaria
           </div>
           <input
@@ -246,7 +254,7 @@ export default function App() {
               fontSize: '12px',
               outline: 'none',
             }}
-            placeholder="Search stations..."
+            placeholder="Search..."
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
@@ -268,7 +276,7 @@ export default function App() {
           </button>
         </div>
 
-        {/* Bottom sheet — slides up when station selected */}
+        {/* Bottom sheet */}
         <div style={{
           position: 'absolute', bottom: 0, left: 0, right: 0,
           background: '#0d1117',
@@ -279,7 +287,6 @@ export default function App() {
           overflow: 'hidden',
           transition: 'max-height 0.3s ease',
         }}>
-          {/* Drag handle */}
           <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 4px' }}>
             <div style={{ width: '36px', height: '4px', borderRadius: '2px', background: '#1e2d3d' }} />
           </div>
@@ -379,7 +386,20 @@ export default function App() {
           onHighlightLine={setHighlightLine}
         />
       </div>
-      {map}
+      <div style={desktop.mapContainer}>
+        {loading && (
+          <div style={desktop.loadingOverlay}>loading network data...</div>
+        )}
+        {!loading && (
+          <RailMap
+            stations={visibleStations}
+            edges={visibleEdges}
+            selectedStation={selected}
+            highlightLineId={highlightLine}
+            onSelectStation={handleSelectStation}
+          />
+        )}
+      </div>
     </div>
   )
 }
