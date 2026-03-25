@@ -3,7 +3,7 @@ import RailMap from './map/RailMap'
 import Sidebar from './sidebar/Sidebar'
 import Filters from './sidebar/Filters'
 
-const COMMIT_HASH = '81003ea510b0f8285bde80640ab7c05f1386fc98'
+const COMMIT_HASH = '97a2574c3e970846253a412d65f707b1a8fc8ad0'
 const CDN_BASE   = `https://cdn.jsdelivr.net/gh/rodeocrazy/italian-rail-map@${COMMIT_HASH}/public/data`
 const LOCAL_BASE = '/data'
 
@@ -246,7 +246,7 @@ export default function App() {
             letterSpacing: '0.1em',
             flexShrink: 0,
           }}>
-            Rete Ferroviaria
+            Mappa Ferroviaria Unificata
           </div>
           <input
             style={{
@@ -369,8 +369,8 @@ export default function App() {
     <div style={desktop.root}>
       <div style={desktop.panel}>
         <div style={desktop.header}>
-          <div style={desktop.title}>Rete Ferroviaria</div>
-          <div style={desktop.subtitle}>Italy Rail Network</div>
+          <div style={desktop.title}>Mappa Ferroviaria Unificata</div>
+          <div style={desktop.subtitle}>Unified Italian Rail Map</div>
         </div>
         <div style={desktop.search}>
           <input
