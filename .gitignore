@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.env
+public/data/*.json
+Train_ways_data.json
+Train_routes_data.json
+Train_station_data.json
+italy_rail.db

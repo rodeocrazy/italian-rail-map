@@ -1,0 +1,54 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  /* Core palette */
+  --bg-base:       #080c10;
+  --bg-panel:      #0d1117;
+  --bg-elevated:   #141b24;
+  --bg-hover:      #1a2333;
+
+  --border:        #1e2d3d;
+  --border-bright: #2a3f55;
+
+  --text-primary:  #c8d8e8;
+  --text-secondary:#6b8299;
+  --text-dim:      #3d5266;
+
+  --accent:        #00d4ff;
+  --accent-dim:    rgba(0, 212, 255, 0.15);
+  --accent-glow:   rgba(0, 212, 255, 0.4);
+
+  --station-active:   #00d4ff;
+  --station-inactive: #2a3f55;
+  --station-halt:     #ff6b35;
+  --edge-color:       rgba(0, 180, 220, 0.5);
+
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-mono:    'DM Mono', monospace;
+  --font-body:    'DM Sans', sans-serif;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 13px;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-panel);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-bright);
+  border-radius: 2px;
+}

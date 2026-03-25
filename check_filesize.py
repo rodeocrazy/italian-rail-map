@@ -1,0 +1,1 @@
+import pathlib; print(pathlib.Path('public/data/stations.json.gz').stat().st_size)
