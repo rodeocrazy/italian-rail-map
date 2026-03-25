@@ -1,7 +1,7 @@
 node_modules/
 dist/
 .env
-public/data/*.json
+public/data/*.json.gz
 Train_ways_data.json
 Train_routes_data.json
 Train_station_data.json

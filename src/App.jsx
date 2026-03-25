@@ -88,27 +88,14 @@ const layout = {
   },
 }
 
-async function fetchGzJson(url) {
-  const res = await fetch(url)
-  const buf = await res.arrayBuffer()
-  const ds  = new DecompressionStream('gzip')
-  const writer = ds.writable.getWriter()
-  writer.write(new Uint8Array(buf))
-  writer.close()
-  const out = await new Response(ds.readable).text()
-  return JSON.parse(out)
-}
-
-const COMMIT_HASH = 'd0ae014aaba13c4d3ce94c9beee55eb1b0fd7c6b'
-const CDN_BASE = `https://cdn.jsdelivr.net/gh/rodeocrazy/italian-rail-map@${COMMIT_HASH}/public/data`
+const COMMIT_HASH = 'b1afd62a528de81ff240fee8685f47ef4db18570'
+const CDN_BASE  = `https://cdn.jsdelivr.net/gh/rodeocrazy/italian-rail-map@${COMMIT_HASH}/public/data`
 const LOCAL_BASE = '/data'
 
 async function fetchData(name) {
-  if (import.meta.env.DEV) {
-    const res = await fetch(`${LOCAL_BASE}/${name}.json`)
-    return res.json()
-  }
-  return fetchGzJson(`${CDN_BASE}/${name}.json.gz`)
+  const base = import.meta.env.DEV ? LOCAL_BASE : CDN_BASE
+  const res = await fetch(`${base}/${name}.json`)
+  return res.json()
 }
 
 export default function App() {
