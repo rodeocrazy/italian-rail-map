@@ -3,7 +3,7 @@ import RailMap from './map/RailMap'
 import Sidebar from './sidebar/Sidebar'
 import Filters from './sidebar/Filters'
 
-const COMMIT_HASH = '97a2574c3e970846253a412d65f707b1a8fc8ad0'
+const COMMIT_HASH = '04300228d5108558ff2ef63e979659398c47d5d6'
 const CDN_BASE   = `https://cdn.jsdelivr.net/gh/rodeocrazy/italian-rail-map@${COMMIT_HASH}/public/data`
 const LOCAL_BASE = '/data'
 
@@ -251,13 +251,14 @@ export default function App() {
           <input
             style={{
               flex: 1,
+              minWidth: 0,
               background: '#141b24',
               border: '1px solid #1e2d3d',
               borderRadius: '2px',
-              padding: '6px 10px',
+              padding: '5px 8px',
               color: '#c8d8e8',
               fontFamily: "'DM Mono', monospace",
-              fontSize: '12px',
+              fontSize: '11px',
               outline: 'none',
             }}
             placeholder="Search..."
