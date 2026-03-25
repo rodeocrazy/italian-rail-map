@@ -88,7 +88,7 @@ const layout = {
   },
 }
 
-const COMMIT_HASH = 'bce68229b1a456fae3fae37ddca2886e2a11443c'
+const COMMIT_HASH = '8ed5b128c30d74e5059eae24a6428ddbbff7c78e'
 const CDN_BASE  = `https://cdn.jsdelivr.net/gh/rodeocrazy/italian-rail-map@${COMMIT_HASH}/public/data`
 const LOCAL_BASE = '/data'
 
