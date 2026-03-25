@@ -104,9 +104,13 @@ const s = {
     color: '#3d5266',
     marginTop: '14px',
   },
-  wikiLink: {
-    display: 'inline-block',
+  externalLinks: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
     marginTop: '10px',
+  },
+  link: {
     fontFamily: "'DM Mono', monospace",
     fontSize: '10px',
     color: '#00d4ff',
@@ -125,6 +129,16 @@ function Row({ label, value }) {
   )
 }
 
+function buildWikiUrl(wikipedia) {
+  if (!wikipedia) return null
+  const match = wikipedia.match(/^([a-z]+):(.+)$/)
+  if (match) {
+    const [, lang, title] = match
+    return `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(title.replace(/ /g, '_'))}`
+  }
+  return `https://en.wikipedia.org/wiki/${encodeURIComponent(wikipedia.replace(/ /g, '_'))}`
+}
+
 export default function Sidebar({ station, connectedLines, onHighlightLine }) {
   if (!station) {
     return (
@@ -137,15 +151,8 @@ export default function Sidebar({ station, connectedLines, onHighlightLine }) {
     )
   }
 
-const wikiUrl = (() => {
-  if (!station.wikipedia) return null
-  const match = station.wikipedia.match(/^([a-z]+):(.+)$/)
-  if (match) {
-    const [, lang, title] = match
-    return `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(title.replace(/ /g, '_'))}`
-  }
-  return `https://en.wikipedia.org/wiki/${encodeURIComponent(station.wikipedia.replace(/ /g, '_'))}`
-})()
+  const wikiUrl = buildWikiUrl(station.wikipedia)
+  const googleMapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(station.name)}/@${station.lat},${station.lon},15z`
 
   return (
     <div style={s.container}>
@@ -173,11 +180,16 @@ const wikiUrl = (() => {
         {station.lat.toFixed(5)}, {station.lon.toFixed(5)}
       </div>
 
-      {wikiUrl && (
-        <a href={wikiUrl} target="_blank" rel="noreferrer" style={s.wikiLink}>
-          → Wikipedia
+      <div style={s.externalLinks}>
+        {wikiUrl && (
+          <a href={wikiUrl} target="_blank" rel="noreferrer" style={s.link}>
+            → Wikipedia
+          </a>
+        )}
+        <a href={googleMapsUrl} target="_blank" rel="noreferrer" style={s.link}>
+          → Google Maps
         </a>
-      )}
+      </div>
 
       {connectedLines.length > 0 && (
         <>
