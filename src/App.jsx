@@ -88,7 +88,7 @@ const layout = {
   },
 }
 
-const COMMIT_HASH = '476039bad409f6df3c9cd872ba8ea10ec086f0e6'
+const COMMIT_HASH = '47510feb2395e7f70348d79c690f2cf515c04b68'
 const CDN_BASE  = `https://cdn.jsdelivr.net/gh/rodeocrazy/italian-rail-map@${COMMIT_HASH}/public/data`
 const LOCAL_BASE = '/data'
 
@@ -162,7 +162,7 @@ export default function App() {
     return visibleEdges
       .filter(e =>
         (e.station_a_id === selected.id || e.station_b_id === selected.id) &&
-        !seen.has(e.line_id) && seen.add(e.line_id)
+        !seen.has(e.line_name) && seen.add(e.line_name)
       )
       .map(e => ({
         line_id:       e.line_id,

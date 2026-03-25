@@ -66,7 +66,7 @@ def export(db_path: Path, out_dir: Path):
         LEFT JOIN lines l ON e.line_id = l.osm_relation_id
         JOIN stations sa ON e.station_a_id = sa.osm_id
         JOIN stations sb ON e.station_b_id = sb.osm_id
-        WHERE l.usage = 'wikidata'
+        WHERE l.usage IN ('wikidata', 'wikidata_p81')
           AND sa.lat IS NOT NULL
           AND sa.lon IS NOT NULL
           AND sb.lat IS NOT NULL
