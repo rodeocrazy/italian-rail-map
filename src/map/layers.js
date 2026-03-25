@@ -1,15 +1,17 @@
 import { ScatterplotLayer, LineLayer } from '@deck.gl/layers'
 
 const RAILWAY_COLORS = {
-  station:    [0, 212, 255],
-  halt:       [255, 107, 53],
-  tram_stop:  [255, 200, 0],
-  default:    [100, 150, 200],
+  station: [0, 212, 255],
+  halt:    [255, 107, 53],
+  default: [100, 150, 200],
 }
 
 const INACTIVE_COLOR = [42, 63, 85]
+const DIMMED_COLOR   = [30, 45, 60, 80]
+const GOLD           = [255, 200, 80, 255]
+const GOLD_BRIGHT    = [255, 215, 100, 255]
 
-export function buildStationLayer({ stations, selectedId, onHover, onClick }) {
+export function buildStationLayer({ stations, selectedId, hasSelection, lineStationIds, onHover, onClick }) {
   return new ScatterplotLayer({
     id: 'stations',
     data: stations,
@@ -23,29 +25,38 @@ export function buildStationLayer({ stations, selectedId, onHover, onClick }) {
     lineWidthMinPixels: 1,
 
     getPosition: d => [d.lon, d.lat],
+
     getRadius: d => {
       if (d.id === selectedId) return 8
       if (d.railway === 'station') return 5
       return 3
     },
+
     getFillColor: d => {
-      if (d.active === 0) return INACTIVE_COLOR
-      const base = RAILWAY_COLORS[d.railway] || RAILWAY_COLORS.default
       if (d.id === selectedId) return [255, 255, 255]
-      return base
+      // Keep line stations lit, dim everything else
+      if (hasSelection) {
+        if (lineStationIds.has(d.id)) return RAILWAY_COLORS[d.railway] || RAILWAY_COLORS.default
+        return DIMMED_COLOR
+      }
+      if (d.active === 0) return INACTIVE_COLOR
+      return RAILWAY_COLORS[d.railway] || RAILWAY_COLORS.default
     },
+
     getLineColor: d => {
-      if (d.id === selectedId) return [0, 212, 255]
-      return [0, 0, 0, 80]
+      if (d.id === selectedId) return [255, 200, 80]
+      if (hasSelection && lineStationIds.has(d.id)) return [0, 0, 0, 40]
+      return [0, 0, 0, 40]
     },
+
     getLineWidth: d => d.id === selectedId ? 2 : 1,
 
     onHover,
     onClick: ({ object }) => onClick(object),
     updateTriggers: {
-      getFillColor: [selectedId],
-      getRadius: [selectedId],
-      getLineColor: [selectedId],
+      getFillColor: [selectedId, hasSelection, lineStationIds],
+      getRadius:    [selectedId],
+      getLineColor: [selectedId, hasSelection],
       getLineWidth: [selectedId],
     },
   })
@@ -56,16 +67,15 @@ export function buildEdgeLayer({ edges, highlightLineId }) {
     id: 'edges',
     data: edges,
     pickable: false,
-    getWidth: d => d.line_id === highlightLineId ? 2.5 : 1,
+    getWidth: 2.5,
     getColor: d => {
-      if (d.line_id === highlightLineId) return [0, 212, 255, 220]
-      return [0, 180, 220, 80]
+      if (d.line_id === highlightLineId) return GOLD_BRIGHT
+      return GOLD
     },
     getSourcePosition: d => [d.lon_a, d.lat_a],
     getTargetPosition: d => [d.lon_b, d.lat_b],
     updateTriggers: {
       getColor: [highlightLineId],
-      getWidth: [highlightLineId],
     },
   })
 }

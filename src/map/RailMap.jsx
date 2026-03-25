@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import Map from 'react-map-gl'
 import DeckGL from '@deck.gl/react'
 import { buildStationLayer, buildEdgeLayer } from './layers'
@@ -19,7 +19,7 @@ const tooltipStyle = {
   pointerEvents:  'none',
   background:     'rgba(13,17,23,0.95)',
   border:         '1px solid #1e2d3d',
-  borderLeft:     '2px solid #00d4ff',
+  borderLeft:     '2px solid #ffc850',
   color:          '#c8d8e8',
   fontFamily:     "'DM Mono', monospace",
   fontSize:       '11px',
@@ -49,13 +49,26 @@ export default function RailMap({
     setHoverInfo(object ? { object, x, y } : null)
   }, [])
 
+  const hasSelection = !!selectedStation
+
+  // Build set of station IDs that are on the selected line
+  const lineStationIds = useMemo(() => {
+    if (!hasSelection) return new Set()
+    return new Set([
+      ...edges.map(e => e.station_a_id),
+      ...edges.map(e => e.station_b_id),
+    ])
+  }, [edges, hasSelection])
+
   const layers = [
     buildEdgeLayer({ edges, highlightLineId }),
     buildStationLayer({
       stations,
-      selectedId: selectedStation?.id,
-      onHover:    handleHover,
-      onClick:    onSelectStation,
+      selectedId:     selectedStation?.id,
+      hasSelection,
+      lineStationIds,
+      onHover:        handleHover,
+      onClick:        onSelectStation,
     }),
   ]
 
@@ -78,7 +91,7 @@ export default function RailMap({
 
       {hoverInfo && (
         <div style={{ ...tooltipStyle, left: hoverInfo.x + 12, top: hoverInfo.y - 10 }}>
-          <div style={{ color: '#00d4ff', fontWeight: 500, marginBottom: 4 }}>
+          <div style={{ color: '#ffc850', fontWeight: 500, marginBottom: 4 }}>
             {hoverInfo.object.name || 'Unnamed'}
           </div>
           {hoverInfo.object.operator && (
