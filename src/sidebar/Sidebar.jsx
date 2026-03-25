@@ -137,9 +137,15 @@ export default function Sidebar({ station, connectedLines, onHighlightLine }) {
     )
   }
 
-  const wikiUrl = station.wikipedia
-    ? `https://en.wikipedia.org/wiki/${station.wikipedia.replace('it:', '')}`
-    : null
+const wikiUrl = (() => {
+  if (!station.wikipedia) return null
+  const match = station.wikipedia.match(/^([a-z]+):(.+)$/)
+  if (match) {
+    const [, lang, title] = match
+    return `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(title.replace(/ /g, '_'))}`
+  }
+  return `https://en.wikipedia.org/wiki/${encodeURIComponent(station.wikipedia.replace(/ /g, '_'))}`
+})()
 
   return (
     <div style={s.container}>
