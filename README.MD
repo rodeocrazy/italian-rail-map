@@ -1,3 +1,5 @@
+# Mappa Ferroviaria Unificata — Unified Rail Map
+
 Italy has one of Europe's most complex rail networks. Trenitalia runs the national service. Italo competes on high-speed routes. Dozens of regional operators cover local lines. No single map shows all of it together.
  
 This project fixes that.
