@@ -116,7 +116,7 @@ export default function App() {
   const [selected, setSelected]           = useState(null)
   const [highlightLine, setHighlightLine] = useState(null)
   const [search, setSearch]               = useState('')
-  const [filters, setFilters]             = useState({ types: ['station'], hideInactive: false })
+  const [filters, setFilters]             = useState({ types: ['station'], hideInactive: true })
   const [showFilters, setShowFilters]     = useState(false)
 
   useEffect(() => {
@@ -147,9 +147,18 @@ export default function App() {
     ])
     return stations.filter(s => {
       if (edgeStationIds.has(s.id)) return true
-      if (filters.hideInactive && s.active === 0) return false
-      const effectiveType = s.station || s.railway
-      if (filters.types.length && !filters.types.includes(effectiveType)) return false
+      if (s.active === 0) {
+        return !filters.hideInactive  // show only if "show disused" is on
+      }
+      const effectiveType = (() => {
+      const st = s.station
+        if (!st || st === 'train') return s.railway
+        if (st === 'light_rail' || st === 'monorail' || st === 'miniature') return s.railway
+        if (st === 'abandoned' || st === 'disused') return s.railway
+        return st
+      })()
+      if (filters.types.length === 0) return false
+      if (!filters.types.includes(effectiveType)) return false
       if (search.trim()) {
         const q = search.toLowerCase()
         return (

@@ -1,12 +1,14 @@
 import { ScatterplotLayer, LineLayer } from '@deck.gl/layers'
 
 const RAILWAY_COLORS = {
-  station: [0, 212, 255],
-  halt:    [255, 107, 53],
-  default: [100, 150, 200],
+  station:   [0, 212, 255],    // cyan
+  halt:      [251, 191, 36],   // yellow
+  funicular: [74, 222, 128],   // bright lime green
+  subway:    [168, 85, 247],   // purple
+  default:   [0, 212, 255],    // cyan
 }
 
-const INACTIVE_COLOR = [42, 63, 85]
+const INACTIVE_COLOR = [255, 107, 53]  // bright burnt orange
 const DIMMED_COLOR   = [30, 45, 60, 80]
 const GOLD           = [255, 200, 80, 255]
 const GOLD_BRIGHT    = [255, 215, 100, 255]
@@ -34,18 +36,21 @@ export function buildStationLayer({ stations, selectedId, hasSelection, lineStat
 
     getFillColor: d => {
       if (d.id === selectedId) return [255, 255, 255]
-      // Keep line stations lit, dim everything else
       if (hasSelection) {
-        if (lineStationIds.has(d.id)) return RAILWAY_COLORS[d.railway] || RAILWAY_COLORS.default
+        if (lineStationIds.has(d.id)) {
+          if (d.active === 0) return INACTIVE_COLOR
+          const effectiveType = (d.station && d.station !== 'train') ? d.station : d.railway
+          return RAILWAY_COLORS[effectiveType] || RAILWAY_COLORS.default
+        }
         return DIMMED_COLOR
       }
       if (d.active === 0) return INACTIVE_COLOR
-      return RAILWAY_COLORS[d.railway] || RAILWAY_COLORS.default
+      const effectiveType = (d.station && d.station !== 'train') ? d.station : d.railway
+      return RAILWAY_COLORS[effectiveType] || RAILWAY_COLORS.default
     },
 
     getLineColor: d => {
       if (d.id === selectedId) return [255, 200, 80]
-      if (hasSelection && lineStationIds.has(d.id)) return [0, 0, 0, 40]
       return [0, 0, 0, 40]
     },
 
@@ -56,7 +61,7 @@ export function buildStationLayer({ stations, selectedId, hasSelection, lineStat
     updateTriggers: {
       getFillColor: [selectedId, hasSelection, lineStationIds],
       getRadius:    [selectedId],
-      getLineColor: [selectedId, hasSelection],
+      getLineColor: [selectedId],
       getLineWidth: [selectedId],
     },
   })

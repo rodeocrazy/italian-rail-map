@@ -120,7 +120,7 @@ export default function RailMap({
             <div style={{ color: '#6b8299' }}>{hoverInfo.object.operator}</div>
           )}
           <div style={{ color: '#3d5266', marginTop: 2 }}>
-            {hoverInfo.object.railway}
+            {hoverInfo.object.station || hoverInfo.object.railway}
             {hoverInfo.object.active === 0 && ' · disused'}
           </div>
         </div>

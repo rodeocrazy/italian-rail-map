@@ -48,7 +48,7 @@ const styles = {
   },
 }
 
-const TYPES = ['station', 'funicular','subway','halt']
+const TYPES = ['station', 'halt', 'funicular', 'subway']
 
 export default function Filters({ filters, onChange, stats }) {
   const toggle = (value) => {
@@ -109,7 +109,7 @@ export default function Filters({ filters, onChange, stats }) {
         <div style={styles.label}>Status</div>
         <div style={styles.chipRow}>
           <div style={styles.chip(!filters.hideInactive)} onClick={toggleActive}>
-            active only
+            show inactive
           </div>
         </div>
       </div>
