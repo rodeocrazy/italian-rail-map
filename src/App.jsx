@@ -153,7 +153,7 @@ export default function App() {
       const effectiveType = (() => {
       const st = s.station
         if (!st || st === 'train') return s.railway
-        if (st === 'light_rail' || st === 'monorail' || st === 'miniature') return s.railway
+        if (st === 'light_rail' || st === 'monorail' || st === 'miniature') return 'station'
         if (st === 'abandoned' || st === 'disused') return s.railway
         return st
       })()
